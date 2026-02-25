@@ -6,10 +6,12 @@ import { westendCommand } from './commands/westend.ts'
 import { paseoCommand } from './commands/paseo.ts'
 import { ethAnvilCommand } from './commands/eth_anvil.ts'
 import { anvilCommand } from './commands/anvil.ts'
+import { gethCommand } from './commands/geth.ts'
 import { reviveDevStackCommand } from './stacks/revive_dev.ts'
 import { westendDevStackCommand } from './stacks/westend_dev.ts'
 import { paseoDevStackCommand } from './stacks/paseo_dev.ts'
 import { anvilDevStackCommand } from './stacks/anvil_dev.ts'
+import { gethDevStackCommand } from './stacks/geth_dev.ts'
 
 const SUBCOMMANDS = [
     'dev-node',
@@ -18,10 +20,12 @@ const SUBCOMMANDS = [
     'paseo',
     'eth-anvil',
     'anvil',
+    'geth',
     'revive-dev-stack',
     'westend-dev-stack',
     'paseo-dev-stack',
     'anvil-dev-stack',
+    'geth-dev-stack',
     'completions',
 ]
 
@@ -68,10 +72,12 @@ const cli = new Command()
     .command('paseo', paseoCommand)
     .command('eth-anvil', ethAnvilCommand)
     .command('anvil', anvilCommand)
+    .command('geth', gethCommand)
     .command('revive-dev-stack', reviveDevStackCommand)
     .command('westend-dev-stack', westendDevStackCommand)
     .command('paseo-dev-stack', paseoDevStackCommand)
     .command('anvil-dev-stack', anvilDevStackCommand)
+    .command('geth-dev-stack', gethDevStackCommand)
     .command(
         'completions',
         new Command()
@@ -103,3 +109,5 @@ export { reviveDevStack } from './stacks/revive_dev.ts'
 export { westendDevStack } from './stacks/westend_dev.ts'
 export { paseoDevStack } from './stacks/paseo_dev.ts'
 export { anvilDevStack } from './stacks/anvil_dev.ts'
+export { geth } from './commands/geth.ts'
+export { gethDevStack } from './stacks/geth_dev.ts'

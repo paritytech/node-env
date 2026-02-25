@@ -32,10 +32,12 @@ Deno.test('--help lists all subcommands', async () => {
             'paseo',
             'eth-anvil',
             'anvil',
+            'geth',
             'revive-dev-stack',
             'westend-dev-stack',
             'paseo-dev-stack',
             'anvil-dev-stack',
+            'geth-dev-stack',
             'completions',
         ]
     ) {
@@ -52,8 +54,10 @@ for (
         'dev-node',
         'eth-rpc',
         'anvil',
+        'geth',
         'revive-dev-stack',
         'anvil-dev-stack',
+        'geth-dev-stack',
     ]
 ) {
     Deno.test(`${sub} --help exits 0`, async () => {

@@ -24,8 +24,9 @@ node-env dev-node [build|run] [--release] [--retester] [--patch=<path>] [--conse
 node-env eth-rpc  [build|run] [--release] [--node-rpc-url <url>]
 node-env westend  [build|run] [--retester]
 node-env paseo    [build|run]
-node-env eth-anvil [--port=N]
-node-env anvil    [build|run] [--port=N] [--bin=<path>]
+node-env eth-anvil [run|proxy] [--port=N]
+node-env anvil    [build|run|proxy] [--port=N] [--bin=<path>]
+node-env geth     [run|proxy] [--port=N] [--retester]
 ```
 
 ### Stacks (tmux multi-pane)
@@ -35,6 +36,7 @@ node-env revive-dev-stack  [--release] [--retester] [--build] [--consensus=<mode
 node-env westend-dev-stack [--build] [--retester]
 node-env paseo-dev-stack   [--build]
 node-env anvil-dev-stack   [--build] [--eth]
+node-env geth-dev-stack    [--retester] [--proxy]
 ```
 
 Stacks open a tmux window named `servers` with the node in one pane and eth-rpc in another, then wait for the RPC to be ready.
@@ -68,6 +70,7 @@ Then from any Claude Code session you can type:
 | `/anvil-stack`     | Start anvil in tmux                  |
 | `/westend-stack`   | Start westend + eth-rpc in tmux      |
 | `/paseo-stack`     | Start paseo + eth-rpc in tmux        |
+| `/geth-stack`      | Start geth in tmux                   |
 | `/kill-servers`    | Kill the running servers tmux window |
 | `/logs <service>`  | View or tail logs from a service     |
 | `/node-env <args>` | Run any node-env subcommand          |
