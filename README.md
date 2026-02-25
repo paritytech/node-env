@@ -27,6 +27,7 @@ node-env paseo    [build|run]
 node-env eth-anvil [run|proxy] [--port=N]
 node-env anvil    [build|run|proxy] [--port=N] [--bin=<path>]
 node-env geth     [run|proxy] [--port=N] [--retester]
+node-env retester-test <path> [--pvm] [--rpc-url <url>] [--profile <profile>]
 ```
 
 ### Stacks (tmux multi-pane)

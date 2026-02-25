@@ -7,6 +7,7 @@ import { paseoCommand } from './commands/paseo.ts'
 import { ethAnvilCommand } from './commands/eth_anvil.ts'
 import { anvilCommand } from './commands/anvil.ts'
 import { gethCommand } from './commands/geth.ts'
+import { retesterTestCommand } from './commands/retester.ts'
 import { reviveDevStackCommand } from './stacks/revive_dev.ts'
 import { westendDevStackCommand } from './stacks/westend_dev.ts'
 import { paseoDevStackCommand } from './stacks/paseo_dev.ts'
@@ -21,6 +22,7 @@ const SUBCOMMANDS = [
     'eth-anvil',
     'anvil',
     'geth',
+    'retester-test',
     'revive-dev-stack',
     'westend-dev-stack',
     'paseo-dev-stack',
@@ -73,6 +75,7 @@ const cli = new Command()
     .command('eth-anvil', ethAnvilCommand)
     .command('anvil', anvilCommand)
     .command('geth', gethCommand)
+    .command('retester-test', retesterTestCommand)
     .command('revive-dev-stack', reviveDevStackCommand)
     .command('westend-dev-stack', westendDevStackCommand)
     .command('paseo-dev-stack', paseoDevStackCommand)
@@ -110,4 +113,5 @@ export { westendDevStack } from './stacks/westend_dev.ts'
 export { paseoDevStack } from './stacks/paseo_dev.ts'
 export { anvilDevStack } from './stacks/anvil_dev.ts'
 export { geth } from './commands/geth.ts'
+export { retesterTest } from './commands/retester.ts'
 export { gethDevStack } from './stacks/geth_dev.ts'
