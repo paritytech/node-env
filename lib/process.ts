@@ -14,6 +14,21 @@ export interface SpawnOptions {
     cwd?: string
 }
 
+/** Tee a stream: pipe to a console writable and write chunks to a file */
+function teeToConsoleAndFile(
+    stream: ReadableStream<Uint8Array>,
+    console: WritableStream<Uint8Array>,
+    file: Deno.FsFile,
+) {
+    const [toConsole, toFile] = stream.tee()
+    toConsole.pipeTo(console, { preventClose: true }).catch(() => {})
+    toFile.pipeTo(
+        new WritableStream({
+            write: (chunk) => file.write(chunk).then(() => {}),
+        }),
+    ).catch(() => {})
+}
+
 /** Spawn a process, tee stdout+stderr to ~/.revive/logs/<name>.log */
 export async function spawn(opts: SpawnOptions): Promise<RunResult> {
     await ensureDir(LOG_DIR)
@@ -39,16 +54,8 @@ export async function spawn(opts: SpawnOptions): Promise<RunResult> {
         stderr: 'piped',
     }).spawn()
 
-    // Tee stdout to console + file
-    const [stdoutA, stdoutB] = process.stdout.tee()
-    stdoutA.pipeTo(Deno.stdout.writable, { preventClose: true })
-        .catch(() => {})
-    stdoutB.pipeTo(file.writable, { preventClose: true })
-        .catch(() => {})
-
-    // Stderr to console only
-    process.stderr.pipeTo(Deno.stderr.writable, { preventClose: true })
-        .catch(() => {})
+    teeToConsoleAndFile(process.stdout, Deno.stdout.writable, file)
+    teeToConsoleAndFile(process.stderr, Deno.stderr.writable, file)
 
     return { process, logFile }
 }

@@ -1,10 +1,10 @@
 import { ensureDir } from '@std/fs'
 import { dirname, join } from '@std/path'
-import { REVIVE_DIR } from './config.ts'
+import { POLKADOT_SDK_DIR, REVIVE_DIR } from './config.ts'
+import { cargoBuild } from './cargo.ts'
 import { capture } from './process.ts'
 
 export interface BuildChainSpecOptions {
-    binary: string
     paraId: number
     runtime: string
     preset: string
@@ -12,16 +12,38 @@ export interface BuildChainSpecOptions {
     relayChain?: string
 }
 
-/** Build chain spec using chain-spec-builder or polkadot-omni-node */
+const OMNI_NODE_BIN = join(
+    POLKADOT_SDK_DIR,
+    'target/release/polkadot-omni-node',
+)
+
+/** Build polkadot-omni-node from source if the release binary doesn't exist */
+async function ensureOmniNode(): Promise<string> {
+    try {
+        await Deno.stat(OMNI_NODE_BIN)
+    } catch {
+        console.log('Building polkadot-omni-node (release)...')
+        await cargoBuild({
+            manifestPath: join(POLKADOT_SDK_DIR, 'Cargo.toml'),
+            package: 'polkadot-omni-node',
+            bin: 'polkadot-omni-node',
+            release: true,
+        })
+    }
+    return OMNI_NODE_BIN
+}
+
+/** Build chain spec using polkadot-omni-node chain-spec-builder */
 export async function buildChainSpec(
     opts: BuildChainSpecOptions,
 ): Promise<void> {
+    const binary = await ensureOmniNode()
     await ensureDir(dirname(opts.outputPath))
     const stdout = await capture([
-        opts.binary,
-        ...(opts.binary.includes('polkadot-omni-node')
-            ? ['chain-spec-builder', '--chain-spec-path', opts.outputPath]
-            : ['-c', opts.outputPath]),
+        binary,
+        'chain-spec-builder',
+        '--chain-spec-path',
+        opts.outputPath,
         'create',
         '--relay-chain',
         opts.relayChain ?? 'dontcare',
@@ -58,9 +80,9 @@ const RETESTER_PATCH_PATH = join(
     'retester-chainspec-patch.json',
 )
 
-const DEV_BALANCE_ENTRY: [string, number] = [
+const DEV_BALANCE_ENTRY: [string, bigint] = [
     '5HYRCKHYJN9z5xUtfFkyMj4JUhsAwWyvuU8vKB1FcnYTf9ZQ',
-    100000000000000001000000000,
+    100_000_000_000_000_001_000_000_000n,
 ]
 
 /** Patch a chain spec JSON file */
@@ -111,7 +133,7 @@ export async function patchChainSpec(
         )
     }
 
-    await Deno.writeTextFile(outputPath, JSON.stringify(spec, null, 2))
+    await Deno.writeTextFile(outputPath, jsonStringify(spec))
     console.log(`Chain spec written to ${outputPath}`)
 }
 
@@ -134,6 +156,32 @@ function isObject(val: unknown): val is Record<string, unknown> {
     return val !== null && typeof val === 'object' && !Array.isArray(val)
 }
 
+/** JSON.stringify that serializes BigInt as plain integer literals */
+function jsonStringify(obj: unknown): string {
+    const placeholder = '__BIGINT_'
+    let counter = 0
+    const bigints = new Map<string, string>()
+
+    const json = JSON.stringify(
+        obj,
+        (_, v) => {
+            if (typeof v === 'bigint') {
+                const key = `"${placeholder}${counter++}"`
+                bigints.set(key, v.toString())
+                return key.slice(1, -1)
+            }
+            return v
+        },
+        2,
+    )
+
+    let result = json
+    for (const [key, value] of bigints) {
+        result = result.replace(key, value)
+    }
+    return result
+}
+
 /** Convenience: build + patch for westend */
 export async function buildWestendChainSpec(
     opts: { retester?: boolean },
@@ -149,31 +197,19 @@ export async function buildWestendChainSpec(
         ? join(REVIVE_DIR, 'ah-westend-spec.json')
         : join(Deno.env.get('HOME') ?? '', 'ah-westend-spec.json')
 
-    if (opts.retester) {
-        await buildChainSpec({
-            binary: 'polkadot-omni-node',
-            paraId: 1000,
-            runtime,
-            preset: 'development',
-            outputPath: basePath,
-        })
-        await patchChainSpec(basePath, outputPath, {
-            retester: true,
-            devStakers: true,
-        })
-    } else {
-        await buildChainSpec({
-            binary: 'chain-spec-builder',
-            paraId: 1000,
-            runtime,
-            preset: 'development',
-            outputPath: basePath,
-        })
-        await patchChainSpec(basePath, outputPath, {
-            devBalance: true,
-            devStakers: true,
-        })
-    }
+    await buildChainSpec({
+        paraId: 1000,
+        runtime,
+        preset: 'development',
+        outputPath: basePath,
+    })
+    await patchChainSpec(
+        basePath,
+        outputPath,
+        opts.retester
+            ? { retester: true, devStakers: true }
+            : { devBalance: true, devStakers: true },
+    )
 
     return outputPath
 }
@@ -182,23 +218,21 @@ export async function buildWestendChainSpec(
 export async function buildPaseoChainSpec(): Promise<string> {
     const home = Deno.env.get('HOME') ?? ''
     const paseoDir = (await import('./config.ts')).PASEO_DIR
-    const basePath = '/tmp/paseo-spec.json'
+    const basePath = '/tmp/ah-paseo-spec-base.json'
     const runtime = join(
         paseoDir,
-        'target/debug/wbuild/paseo-runtime/paseo_runtime.wasm',
+        'target/debug/wbuild/asset-hub-paseo-runtime/asset_hub_paseo_runtime.wasm',
     )
-    const outputPath = join(home, 'paseo-spec.json')
+    const outputPath = join(home, 'ah-paseo-spec.json')
 
     await buildChainSpec({
-        binary: 'chain-spec-builder',
-        paraId: 1111,
+        paraId: 1000,
         runtime,
         preset: 'development',
         outputPath: basePath,
     })
     await patchChainSpec(basePath, outputPath, {
         devBalance: true,
-        devStakers: true,
     })
 
     return outputPath

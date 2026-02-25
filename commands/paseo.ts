@@ -18,7 +18,7 @@ export async function paseo(opts: PaseoOptions = {}): Promise<void> {
     if (mode === 'build' || mode === 'default') {
         await cargoBuild({
             manifestPath: join(PASEO_DIR, 'Cargo.toml'),
-            package: 'paseo-runtime',
+            package: 'asset-hub-paseo-runtime',
             quiet: true,
         })
         await buildPaseoChainSpec()
@@ -27,7 +27,7 @@ export async function paseo(opts: PaseoOptions = {}): Promise<void> {
 
     const chainSpec = join(
         Deno.env.get('HOME') ?? '',
-        'paseo-spec.json',
+        'ah-paseo-spec.json',
     )
 
     await serve({
