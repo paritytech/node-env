@@ -54,13 +54,12 @@ eval "$(node-env completions zsh)"
 This repo ships slash commands in `.claude/commands/` that let you start
 stacks, view logs, and run any node-env subcommand from Claude Code.
 
-To make them available in **any project**, add this repo as an extra directory
-in `~/.claude/settings.json`:
+To make them available in **any project**, symlink them into your global
+commands directory:
 
-```json
-{
-    "additionalDirectories": ["~/github/node-env"]
-}
+```sh
+mkdir -p ~/.claude/commands
+ln -s ~/github/node-env/.claude/commands/*.md ~/.claude/commands/
 ```
 
 Then from any Claude Code session you can type:
