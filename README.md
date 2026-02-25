@@ -46,6 +46,32 @@ Stacks open a tmux window named `servers` with the node in one pane and eth-rpc 
 eval "$(node-env completions zsh)"
 ```
 
+## Claude Code integration
+
+This repo ships slash commands in `.claude/commands/` that let you start
+stacks, view logs, and run any node-env subcommand from Claude Code.
+
+To make them available in **any project**, add this repo as an extra directory
+in `~/.claude/settings.json`:
+
+```json
+{
+    "additionalDirectories": ["~/github/node-env"]
+}
+```
+
+Then from any Claude Code session you can type:
+
+| Command            | What it does                         |
+| ------------------ | ------------------------------------ |
+| `/dev-stack`       | Start dev-node + eth-rpc in tmux     |
+| `/anvil-stack`     | Start anvil in tmux                  |
+| `/westend-stack`   | Start westend + eth-rpc in tmux      |
+| `/paseo-stack`     | Start paseo + eth-rpc in tmux        |
+| `/kill-servers`    | Kill the running servers tmux window |
+| `/logs <service>`  | View or tail logs from a service     |
+| `/node-env <args>` | Run any node-env subcommand          |
+
 ## Logging
 
 All process output is teed to `~/.revive/logs/<name>.log` (e.g. `dev-node.log`, `eth-rpc.log`).

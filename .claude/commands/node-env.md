@@ -9,7 +9,7 @@ Run a node-env CLI command. Available subcommands:
 - `dev-node [build|run]` — Build or run revive-dev-node
 - `eth-rpc [build|run]` — Build or run eth-rpc bridge
 - `westend [build|run]` — Build or run asset-hub-westend
-- `paseo [build|run]` — Build or run passet-hub
+- `paseo [build|run]` — Build or run paseo
 - `eth-anvil` — Run system anvil
 - `anvil [build|run]` — Build or run anvil-polkadot
 - `revive-dev-stack` — dev-node + eth-rpc in tmux
@@ -23,4 +23,4 @@ User requested: `$ARGUMENTS`
 deno run --allow-all ~/github/node-env/mod.ts $ARGUMENTS
 ```
 
-If the user wants to interact with a running node after starting it (send transactions, check balances, etc.), use `cast` commands against `http://localhost:8545`.
+If the user wants to interact with a running node after starting it (send transactions, check balances, etc.), use JSON-RPC calls against `http://localhost:8545`.

@@ -4,7 +4,7 @@ allowed-tools: Bash(deno run:*), Bash(tmux:*)
 argument-hint: [--build]
 ---
 
-Start the Paseo (Passet Hub) development stack in tmux.
+Start the Paseo development stack in tmux.
 
 User provided these flags: `$ARGUMENTS`
 
