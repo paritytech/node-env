@@ -1,6 +1,6 @@
 import { ensureDir } from '@std/fs'
 import { dirname, join } from '@std/path'
-import { CONTRACTS_BOILERPLATE_DIR, REVIVE_DIR } from './config.ts'
+import { REVIVE_DIR } from './config.ts'
 import { capture } from './process.ts'
 
 export interface BuildChainSpecOptions {
@@ -53,8 +53,8 @@ export interface PatchOptions {
 }
 
 const RETESTER_PATCH_PATH = join(
-    CONTRACTS_BOILERPLATE_DIR,
-    'scripts',
+    dirname(import.meta.dirname!),
+    'data',
     'retester-chainspec-patch.json',
 )
 
@@ -181,13 +181,13 @@ export async function buildWestendChainSpec(
 /** Convenience: build + patch for paseo */
 export async function buildPaseoChainSpec(): Promise<string> {
     const home = Deno.env.get('HOME') ?? ''
-    const passetDir = (await import('./config.ts')).PASSET_HUB_DIR
-    const basePath = '/tmp/passet-spec.json'
+    const paseoDir = (await import('./config.ts')).PASEO_DIR
+    const basePath = '/tmp/paseo-spec.json'
     const runtime = join(
-        passetDir,
-        'target/debug/wbuild/passet-hub-runtime/passet_hub_runtime.wasm',
+        paseoDir,
+        'target/debug/wbuild/paseo-runtime/paseo_runtime.wasm',
     )
-    const outputPath = join(home, 'passet-spec.json')
+    const outputPath = join(home, 'paseo-spec.json')
 
     await buildChainSpec({
         binary: 'chain-spec-builder',

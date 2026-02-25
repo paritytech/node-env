@@ -83,6 +83,10 @@ const cli = new Command()
     )
 
 if (import.meta.main) {
+    if (Deno.args.length === 0) {
+        cli.showHelp()
+        Deno.exit(0)
+    }
     await cli.parse(Deno.args)
 }
 

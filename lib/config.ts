@@ -1,22 +1,25 @@
-import { join } from '@std/path'
+import { dirname, fromFileUrl, join } from '@std/path'
 
-const home = Deno.env.get('HOME') ?? ''
+// Repo root = parent of lib/
+const REPO_DIR = dirname(dirname(fromFileUrl(import.meta.url)))
+const SIBLING = (name: string) => join(REPO_DIR, '..', name)
 
 export const POLKADOT_SDK_DIR = Deno.env.get('POLKADOT_SDK_DIR') ??
-    join(home, 'polkadot-sdk')
+    SIBLING('polkadot-sdk')
 
 export const FOUNDRY_DIR = Deno.env.get('FOUNDRY_DIR') ??
-    join(home, 'github', 'foundry-polkadot')
+    SIBLING('foundry-polkadot')
 
 export const RETESTER_DIR = Deno.env.get('RETESTER_DIR') ??
-    join(home, 'github', 'revive-differential-tests')
+    SIBLING('revive-differential-tests')
 
-export const PASSET_HUB_DIR = join(home, 'github', 'passet-hub')
+export const PASEO_DIR = Deno.env.get('PASEO_DIR') ??
+    SIBLING('paseo')
 
-export const CONTRACTS_BOILERPLATE_DIR =
-    Deno.env.get('CONTRACTS_BOILERPLATE_DIR') ??
-        join(home, 'github', 'contracts-boilerplate')
+export const MITMPROXY_DIR = Deno.env.get('MITMPROXY_DIR') ??
+    SIBLING('mitmproxy')
 
+const home = Deno.env.get('HOME') ?? ''
 export const REVIVE_DIR = join(home, '.revive')
 export const LOG_DIR = join(REVIVE_DIR, 'logs')
 

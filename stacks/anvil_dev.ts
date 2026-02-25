@@ -6,6 +6,7 @@ import * as tmux from '../lib/tmux.ts'
 export interface AnvilDevStackOptions {
     build?: boolean
     eth?: boolean
+    proxy?: boolean
 }
 
 export async function anvilDevStack(
@@ -14,10 +15,12 @@ export async function anvilDevStack(
     const buildFlag = opts.build ? ' --build' : ''
     const binFlag = opts.eth ? ' --bin anvil' : ''
 
+    const mode = opts.proxy ? 'proxy' : 'run'
+
     await tmux.killServersWindow()
     await tmux.newWindow(
         'servers',
-        `anvil run${buildFlag}${binFlag}`,
+        `anvil ${mode}${buildFlag}${binFlag}`,
     )
     await waitForEthRpc()
     await fundAnvilAddress()
@@ -28,4 +31,5 @@ export const anvilDevStackCommand = new Command()
     .description('Run anvil in tmux')
     .option('--build', 'Build before starting')
     .option('--eth', 'Use system anvil instead of anvil-polkadot')
+    .option('--proxy', 'Run mitmproxy in front of anvil')
     .action((options) => anvilDevStack(options))

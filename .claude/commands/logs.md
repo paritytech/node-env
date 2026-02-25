@@ -12,6 +12,7 @@ Available log files:
 !`ls -lt ~/.revive/logs/ 2>/dev/null || echo "No logs directory yet"`
 
 If the user specified `--follow` or `tail`, use:
+
 ```
 tail -f ~/.revive/logs/<service>.log
 ```

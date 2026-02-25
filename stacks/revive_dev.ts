@@ -9,6 +9,7 @@ export interface ReviveDevStackOptions {
     retester?: boolean
     build?: boolean
     consensus?: string
+    proxy?: boolean
 }
 
 export async function reviveDevStack(
@@ -33,9 +34,10 @@ export async function reviveDevStack(
         'servers',
         `dev-node run${releaseFlag}${retesterFlag}${consensusFlag}`,
     )
+    const ethRpcMode = opts.proxy ? 'proxy' : 'run'
     await tmux.splitWindow(
         'servers',
-        `eth-rpc run${releaseFlag}`,
+        `eth-rpc ${ethRpcMode}${releaseFlag}`,
     )
     await tmux.selectPane('servers.1')
     await waitForEthRpc()
@@ -48,4 +50,5 @@ export const reviveDevStackCommand = new Command()
     .option('--retester', 'Use retester chain spec')
     .option('--build', 'Build before starting')
     .option('--consensus <mode:string>', 'Consensus mode')
+    .option('--proxy', 'Run mitmproxy in front of eth-rpc')
     .action((options) => reviveDevStack(options))

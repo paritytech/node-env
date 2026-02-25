@@ -7,6 +7,7 @@ import * as tmux from '../lib/tmux.ts'
 export interface WestendDevStackOptions {
     build?: boolean
     retester?: boolean
+    proxy?: boolean
 }
 
 export async function westendDevStack(
@@ -22,7 +23,8 @@ export async function westendDevStack(
 
     await tmux.killServersWindow()
     await tmux.newWindow('servers', `westend run${retesterFlag}`)
-    await tmux.splitWindow('servers', 'eth-rpc run')
+    const ethRpcMode = opts.proxy ? 'proxy' : 'run'
+    await tmux.splitWindow('servers', `eth-rpc ${ethRpcMode}`)
     await tmux.selectPane('servers.1')
     await waitForEthRpc()
 }
@@ -32,4 +34,5 @@ export const westendDevStackCommand = new Command()
     .description('Run westend + eth-rpc in tmux')
     .option('--build', 'Build before starting')
     .option('--retester', 'Use retester chain spec')
+    .option('--proxy', 'Run mitmproxy in front of eth-rpc')
     .action((options) => westendDevStack(options))

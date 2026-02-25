@@ -7,6 +7,7 @@ import {
 } from '../lib/config.ts'
 import { cargoBuild } from '../lib/cargo.ts'
 import { serve } from '../lib/process.ts'
+import { startMitmproxy } from '../lib/mitmproxy.ts'
 
 export interface EthRpcOptions {
     mode?: string
@@ -33,21 +34,28 @@ export async function ethRpc(opts: EthRpcOptions = {}): Promise<void> {
         return
     }
 
-    await serve({
-        name: 'eth-rpc',
-        cmd: [
-            binary,
-            `--log=${log}`,
-            '--no-prometheus',
-            '--dev',
-            '--rpc-max-response-size',
-            '50',
-            '--rpc-max-connections',
-            '2000',
-            '--node-rpc-url',
-            nodeRpcUrl,
-        ],
-    })
+    if (mode === 'proxy') {
+        await startMitmproxy(['8545:8546'])
+    }
+
+    const args = [
+        binary,
+        `--log=${log}`,
+        '--no-prometheus',
+        '--dev',
+        '--rpc-max-response-size',
+        '50',
+        '--rpc-max-connections',
+        '2000',
+        '--node-rpc-url',
+        nodeRpcUrl,
+    ]
+
+    if (mode === 'proxy') {
+        args.push('--rpc-port', '8546')
+    }
+
+    await serve({ name: 'eth-rpc', cmd: args })
 }
 
 export const ethRpcCommand = new Command()

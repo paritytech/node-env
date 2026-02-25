@@ -8,6 +8,7 @@ import {
 import { cargoBuild } from '../lib/cargo.ts'
 import { buildDevNodeSpec, patchChainSpec } from '../lib/chain_spec.ts'
 import { serve } from '../lib/process.ts'
+import { startMitmproxy } from '../lib/mitmproxy.ts'
 
 export interface DevNodeOptions {
     mode?: string
@@ -68,6 +69,10 @@ export async function devNode(opts: DevNodeOptions = {}): Promise<void> {
         if (mode === 'build') return
     }
 
+    if (mode === 'proxy') {
+        await startMitmproxy(['9944:8844'])
+    }
+
     // run mode
     const args = [
         binary,
@@ -78,6 +83,9 @@ export async function devNode(opts: DevNodeOptions = {}): Promise<void> {
         '--dev',
     ]
 
+    if (mode === 'proxy') {
+        args.push('--rpc-port', '8844')
+    }
     if (opts.retester || opts.patch) {
         args.push(
             '--chain',

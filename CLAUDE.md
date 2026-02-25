@@ -26,8 +26,9 @@ deno run --allow-all mod.ts <cmd>  # direct
 
 ## Key paths
 
-- `POLKADOT_SDK_DIR` → `~/polkadot-sdk` (polkadot-sdk checkout)
-- `FOUNDRY_DIR` → `~/github/foundry-polkadot`
-- `CONTRACTS_BOILERPLATE_DIR` → `~/github/contracts-boilerplate` (retester chainspec patch)
+- All sibling repos default to `../<name>` relative to node-env
+- `POLKADOT_SDK_DIR` → `../polkadot-sdk`
+- `FOUNDRY_DIR` → `../foundry-polkadot`
+- `MITMPROXY_DIR` → `../mitmproxy`
 - Logs → `~/.revive/logs/`
-- Chain specs → `~/.revive/` or `~/`
+- Chain specs → `~/.revive/`

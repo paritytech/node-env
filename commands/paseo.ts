@@ -1,6 +1,6 @@
 import { Command } from '@cliffy/command'
 import { join } from '@std/path'
-import { PASSET_HUB_DIR, rustLog, validateDir } from '../lib/config.ts'
+import { PASEO_DIR, rustLog, validateDir } from '../lib/config.ts'
 import { cargoBuild } from '../lib/cargo.ts'
 import { buildPaseoChainSpec } from '../lib/chain_spec.ts'
 import { serve } from '../lib/process.ts'
@@ -10,15 +10,15 @@ export interface PaseoOptions {
 }
 
 export async function paseo(opts: PaseoOptions = {}): Promise<void> {
-    await validateDir(PASSET_HUB_DIR, 'Passet Hub directory')
+    await validateDir(PASEO_DIR, 'Paseo runtimes directory')
 
     const mode = opts.mode ?? 'default'
     const log = rustLog('paseo')
 
     if (mode === 'build' || mode === 'default') {
         await cargoBuild({
-            manifestPath: join(PASSET_HUB_DIR, 'Cargo.toml'),
-            package: 'passet-hub-runtime',
+            manifestPath: join(PASEO_DIR, 'Cargo.toml'),
+            package: 'paseo-runtime',
             quiet: true,
         })
         await buildPaseoChainSpec()
@@ -27,7 +27,7 @@ export async function paseo(opts: PaseoOptions = {}): Promise<void> {
 
     const chainSpec = join(
         Deno.env.get('HOME') ?? '',
-        'passet-spec.json',
+        'paseo-spec.json',
     )
 
     await serve({
@@ -47,6 +47,6 @@ export async function paseo(opts: PaseoOptions = {}): Promise<void> {
 
 export const paseoCommand = new Command()
     .name('paseo')
-    .description('Build or run passet-hub')
+    .description('Build or run paseo')
     .arguments('[mode:string]')
     .action((_options, mode) => paseo({ mode: mode ?? 'default' }))

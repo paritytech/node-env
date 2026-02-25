@@ -1,6 +1,6 @@
 # node-env
 
-Deno CLI for managing Polkadot Revive development environments. Replaces the monolithic `node-env.sh` shell script with structured, typed commands.
+Deno CLI for managing Polkadot Revive development environments.
 
 ## Install
 
@@ -85,11 +85,40 @@ stacks/
     anvil_dev.ts    # anvil standalone
 ```
 
+## Dependencies
+
+All services are built from source. Clone sibling repos next to `node-env`:
+
+```
+github/
+    node-env/              # this repo
+    polkadot-sdk/          # git@github.com:parity-revive/polkadot-sdk.git
+    foundry-polkadot/      # git@github.com:parity-revive/foundry-polkadot.git
+    paseo/                 # git@github.com:paseo-network/runtimes.git
+    mitmproxy/             # git@github.com:pgherveou/mitmproxy.git (optional, for proxy mode)
+```
+
+Required tooling:
+
+- [Deno](https://deno.land) — runs node-env itself
+- [Rust](https://rustup.rs) — builds polkadot-sdk, foundry, etc.
+- [tmux](https://github.com/tmux/tmux) — stacks and proxy mode run services in tmux windows
+- [mitmproxy](https://mitmproxy.org) — only needed for `proxy` mode (Python venv inside `mitmproxy/`)
+
+Pre-built / system binaries (not built from source):
+
+- `geth` — used by `eth-anvil` command (system install)
+- `anvil` — used by `anvil --bin anvil` / `anvil-dev-stack --eth` (system Foundry install)
+
 ## Environment variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `POLKADOT_SDK_DIR` | `~/polkadot-sdk` | Polkadot SDK checkout |
-| `FOUNDRY_DIR` | `~/github/foundry-polkadot` | Foundry Polkadot checkout |
-| `CONTRACTS_BOILERPLATE_DIR` | `~/github/contracts-boilerplate` | Contracts boilerplate (for retester chainspec patch) |
-| `RUST_LOG` | per-command defaults | Override log level for any command |
+All repo paths default to siblings of `node-env` (`../<name>`). Override with env vars if your layout differs.
+
+| Variable           | Default                        | Description                        |
+| ------------------ | ------------------------------ | ---------------------------------- |
+| `POLKADOT_SDK_DIR` | `../polkadot-sdk`              | Polkadot SDK checkout              |
+| `FOUNDRY_DIR`      | `../foundry-polkadot`          | Foundry Polkadot checkout          |
+| `RETESTER_DIR`     | `../revive-differential-tests` | Differential tests repo            |
+| `PASEO_DIR`        | `../paseo`                     | Paseo runtimes checkout            |
+| `MITMPROXY_DIR`    | `../mitmproxy`                 | mitmproxy checkout (proxy mode)    |
+| `RUST_LOG`         | per-command defaults           | Override log level for any command |

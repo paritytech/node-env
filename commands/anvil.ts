@@ -3,6 +3,7 @@ import { join } from '@std/path'
 import { FOUNDRY_DIR, rustLog } from '../lib/config.ts'
 import { cargoBuild } from '../lib/cargo.ts'
 import { serve } from '../lib/process.ts'
+import { startMitmproxy } from '../lib/mitmproxy.ts'
 
 export interface AnvilOptions {
     mode?: string
@@ -27,9 +28,16 @@ export async function anvil(opts: AnvilOptions = {}): Promise<void> {
         return
     }
 
+    let serverPort = port
+    if (mode === 'proxy') {
+        const numPort = Number(port)
+        serverPort = String(numPort + 1)
+        await startMitmproxy([`${port}:${serverPort}`])
+    }
+
     await serve({
         name: 'anvil',
-        cmd: [bin, '-p', port, '--timestamp', '0'],
+        cmd: [bin, '-p', serverPort, '--timestamp', '0'],
         env: { RUST_LOG: log },
     })
 }

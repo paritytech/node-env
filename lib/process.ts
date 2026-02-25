@@ -29,7 +29,11 @@ export async function spawn(opts: SpawnOptions): Promise<RunResult> {
 
     const process = new Deno.Command(opts.cmd[0], {
         args: opts.cmd.slice(1),
-        env: opts.env,
+        env: {
+            CLICOLOR_FORCE: '1',
+            RUST_LOG_STYLE: 'always',
+            ...opts.env,
+        },
         cwd: opts.cwd,
         stdout: 'piped',
         stderr: 'piped',
