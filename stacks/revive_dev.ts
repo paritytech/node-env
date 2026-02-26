@@ -15,9 +15,11 @@ export interface ReviveDevStackOptions {
 export async function reviveDevStack(
     opts: ReviveDevStackOptions = {},
 ): Promise<void> {
+    const rustLog = Deno.env.get('RUST_LOG')
     const releaseFlag = opts.release ? ' --release' : ''
     const retesterFlag = opts.retester ? ' --retester' : ''
     const consensusFlag = opts.consensus ? ` --consensus ${opts.consensus}` : ''
+    const logFlag = rustLog ? ` --log '${rustLog}'` : ''
 
     if (opts.build) {
         console.log('Building dev-node and eth-rpc...')
@@ -32,7 +34,7 @@ export async function reviveDevStack(
     await tmux.killServersWindow()
     await tmux.newWindow(
         'servers',
-        `dev-node run${releaseFlag}${retesterFlag}${consensusFlag}`,
+        `dev-node run${releaseFlag}${retesterFlag}${consensusFlag}${logFlag}`,
     )
     const ethRpcMode = opts.proxy ? 'proxy' : 'run'
     await tmux.splitWindow(

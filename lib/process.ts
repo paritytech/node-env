@@ -39,8 +39,10 @@ export async function spawn(opts: SpawnOptions): Promise<RunResult> {
         truncate: true,
     })
 
-    console.log(`> ${opts.cmd.join(' ')}`)
+    const cmdLine = opts.cmd.join(' ')
+    console.log(`> ${cmdLine}`)
     console.log(`  logging to ${logFile}`)
+    await file.write(new TextEncoder().encode(`> ${cmdLine}\n`))
 
     const process = new Deno.Command(opts.cmd[0], {
         args: opts.cmd.slice(1),

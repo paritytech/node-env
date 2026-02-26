@@ -12,7 +12,7 @@ export interface BuildChainSpecOptions {
     relayChain?: string
 }
 
-const OMNI_NODE_BIN = join(
+export const OMNI_NODE_BIN = join(
     POLKADOT_SDK_DIR,
     'target/release/polkadot-omni-node',
 )
@@ -101,9 +101,10 @@ export async function patchChainSpec(
     }
 
     if (opts.devBalance) {
-        const balances = spec.genesis?.runtimeGenesis?.patch?.balances
-            ?.balances ?? []
-        balances.push(DEV_BALANCE_ENTRY)
+        const balances: [string, bigint][] = spec.genesis?.runtimeGenesis
+            ?.patch?.balances?.balances ?? []
+        const existing = balances.find((b) => b[0] === DEV_BALANCE_ENTRY[0])
+        if (!existing) balances.push(DEV_BALANCE_ENTRY)
         spec.genesis ??= {}
         spec.genesis.runtimeGenesis ??= {}
         spec.genesis.runtimeGenesis.patch ??= {}

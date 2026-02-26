@@ -1,10 +1,6 @@
 import { Command } from '@cliffy/command'
 import { join } from '@std/path'
-import {
-    POLKADOT_SDK_DIR,
-    rustLog,
-    validatePolkadotSdkDir,
-} from '../lib/config.ts'
+import { POLKADOT_SDK_DIR, validatePolkadotSdkDir } from '../lib/config.ts'
 import { cargoBuild } from '../lib/cargo.ts'
 import { buildDevNodeSpec, patchChainSpec } from '../lib/chain_spec.ts'
 import { serve } from '../lib/process.ts'
@@ -16,6 +12,7 @@ export interface DevNodeOptions {
     retester?: boolean
     patch?: string
     consensus?: string
+    log?: string
 }
 
 export async function devNode(opts: DevNodeOptions = {}): Promise<void> {
@@ -23,7 +20,8 @@ export async function devNode(opts: DevNodeOptions = {}): Promise<void> {
 
     const mode = opts.mode ?? 'run'
     const profile = opts.release ? 'release' : 'debug'
-    const log = rustLog('devNode')
+    const log = opts.log ?? Deno.env.get('RUST_LOG') ??
+        'info,runtime::revive=debug'
     const binary = join(POLKADOT_SDK_DIR, 'target', profile, 'revive-dev-node')
 
     if (opts.retester && opts.patch) {
@@ -107,4 +105,5 @@ export const devNodeCommand = new Command()
     .option('--retester', 'Use retester chain spec')
     .option('--patch <path:string>', 'Custom genesis patch file')
     .option('--consensus <mode:string>', 'Consensus mode')
+    .option('--log <level:string>', 'Log filter (default: RUST_LOG or info)')
     .action((options, mode) => devNode({ mode: mode ?? 'default', ...options }))
