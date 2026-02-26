@@ -184,6 +184,12 @@ function jsonStringify(obj: unknown): string {
     return result
 }
 
+function hexEncode(bytes: Uint8Array): string {
+    return '0x' + [...bytes].map((b) => b.toString(16).padStart(2, '0')).join(
+        '',
+    )
+}
+
 function u32ToLeHex(n: number): string {
     const buf = new Uint8Array(4)
     new DataView(buf.buffer).setUint32(0, n, true)
@@ -194,8 +200,10 @@ function storageKey(pallet: string, item: string): string {
     const enc = new TextEncoder()
     const a = Twox128(enc.encode(pallet))
     const b = Twox128(enc.encode(item))
-    return '0x' + [...a, ...b].map((b) => b.toString(16).padStart(2, '0'))
-        .join('')
+    const combined = new Uint8Array(a.length + b.length)
+    combined.set(a)
+    combined.set(b, a.length)
+    return hexEncode(combined)
 }
 
 /**
@@ -241,6 +249,27 @@ export async function buildRawChainSpec(
     console.log(`Raw chain spec written to ${rawOutputPath}`)
 }
 
+/** Return true if the chain spec already contains the same wasm runtime */
+async function isUpToDate(
+    runtime: string,
+    outputPath: string,
+): Promise<boolean> {
+    try {
+        const [wasmBytes, specText] = await Promise.all([
+            Deno.readFile(runtime),
+            Deno.readTextFile(outputPath),
+        ])
+        const spec = JSON.parse(specText)
+        const codeKey = hexEncode(new TextEncoder().encode(':code'))
+        const embedded: string | undefined = spec.genesis?.raw?.top?.[codeKey]
+        if (!embedded) return false
+        const wasmHex = hexEncode(wasmBytes)
+        return embedded === wasmHex
+    } catch {
+        return false
+    }
+}
+
 /** Convenience: build + patch + raw for westend */
 export async function buildWestendChainSpec(
     opts: { retester?: boolean },
@@ -254,6 +283,11 @@ export async function buildWestendChainSpec(
     )
 
     const outputPath = join(CHAINSPEC_DIR, 'ah-westend-spec.json')
+
+    if (await isUpToDate(runtime, outputPath)) {
+        console.log('Chain spec up to date, skipping generation')
+        return outputPath
+    }
 
     await buildChainSpec({
         paraId: 1000,
@@ -273,6 +307,66 @@ export async function buildWestendChainSpec(
     return outputPath
 }
 
+/** Convenience: build + patch + raw for polkadot */
+export async function buildPolkadotChainSpec(): Promise<string> {
+    const runtimesDir = (await import('./config.ts')).RUNTIMES_DIR
+    const basePath = '/tmp/ah-polkadot-spec-base.json'
+    const patchedPath = '/tmp/ah-polkadot-spec-patched.json'
+    const runtime = join(
+        runtimesDir,
+        'target/debug/wbuild/asset-hub-polkadot-runtime/asset_hub_polkadot_runtime.wasm',
+    )
+    const outputPath = join(CHAINSPEC_DIR, 'ah-polkadot-spec.json')
+
+    if (await isUpToDate(runtime, outputPath)) {
+        console.log('Chain spec up to date, skipping generation')
+        return outputPath
+    }
+
+    await buildChainSpec({
+        paraId: 1000,
+        runtime,
+        preset: 'development',
+        outputPath: basePath,
+    })
+    await patchChainSpec(basePath, patchedPath, {
+        devBalance: true,
+    })
+    await buildRawChainSpec(patchedPath, outputPath)
+
+    return outputPath
+}
+
+/** Convenience: build + patch + raw for kusama */
+export async function buildKusamaChainSpec(): Promise<string> {
+    const runtimesDir = (await import('./config.ts')).RUNTIMES_DIR
+    const basePath = '/tmp/ah-kusama-spec-base.json'
+    const patchedPath = '/tmp/ah-kusama-spec-patched.json'
+    const runtime = join(
+        runtimesDir,
+        'target/debug/wbuild/asset-hub-kusama-runtime/asset_hub_kusama_runtime.wasm',
+    )
+    const outputPath = join(CHAINSPEC_DIR, 'ah-kusama-spec.json')
+
+    if (await isUpToDate(runtime, outputPath)) {
+        console.log('Chain spec up to date, skipping generation')
+        return outputPath
+    }
+
+    await buildChainSpec({
+        paraId: 1000,
+        runtime,
+        preset: 'development',
+        outputPath: basePath,
+    })
+    await patchChainSpec(basePath, patchedPath, {
+        devBalance: true,
+    })
+    await buildRawChainSpec(patchedPath, outputPath)
+
+    return outputPath
+}
+
 /** Convenience: build + patch + raw for paseo */
 export async function buildPaseoChainSpec(): Promise<string> {
     const paseoDir = (await import('./config.ts')).PASEO_DIR
@@ -283,6 +377,11 @@ export async function buildPaseoChainSpec(): Promise<string> {
         'target/debug/wbuild/asset-hub-paseo-runtime/asset_hub_paseo_runtime.wasm',
     )
     const outputPath = join(CHAINSPEC_DIR, 'ah-paseo-spec.json')
+
+    if (await isUpToDate(runtime, outputPath)) {
+        console.log('Chain spec up to date, skipping generation')
+        return outputPath
+    }
 
     await buildChainSpec({
         paraId: 1000,

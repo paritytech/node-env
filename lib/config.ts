@@ -16,6 +16,9 @@ export const RETESTER_DIR = Deno.env.get('RETESTER_DIR') ??
 export const PASEO_DIR = Deno.env.get('PASEO_DIR') ??
     SIBLING('paseo')
 
+export const RUNTIMES_DIR = Deno.env.get('RUNTIMES_DIR') ??
+    SIBLING('runtimes')
+
 export const MITMPROXY_DIR = Deno.env.get('MITMPROXY_DIR') ??
     SIBLING('mitmproxy')
 
@@ -30,6 +33,8 @@ export const RUST_LOG = {
     ethRpc: 'info,eth-rpc=debug,jsonrpsee-server=trace',
     westend: 'error,sc_rpc_server=info,runtime::revive=debug',
     paseo: 'error,sc_rpc_server=info,runtime::revive=debug',
+    polkadot: 'error,sc_rpc_server=info,runtime::revive=debug',
+    kusama: 'error,sc_rpc_server=info,runtime::revive=debug',
     anvil: 'runtime=debug,pallet_revive=debug',
 }
 
