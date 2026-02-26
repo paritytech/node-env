@@ -1,6 +1,6 @@
 import { Command } from '@cliffy/command'
 import { join } from '@std/path'
-import { RETESTER_DIR, REVIVE_DIR } from '../lib/config.ts'
+import { CHAINSPEC_DIR, NODE_ENV_DIR, RETESTER_DIR } from '../lib/config.ts'
 import { serve } from '../lib/process.ts'
 import { startMitmproxy } from '../lib/mitmproxy.ts'
 import { capture } from '../lib/process.ts'
@@ -13,7 +13,7 @@ export interface GethOptions {
 }
 
 async function buildGethSpec(): Promise<string> {
-    const specPath = join(REVIVE_DIR, 'geth_spec.json')
+    const specPath = join(CHAINSPEC_DIR, 'geth_spec.json')
 
     try {
         await Deno.stat(specPath)
@@ -23,7 +23,7 @@ async function buildGethSpec(): Promise<string> {
         // spec doesn't exist, generate it
     }
 
-    await ensureDir(REVIVE_DIR)
+    await ensureDir(NODE_ENV_DIR)
     console.log('Generating geth genesis spec...')
 
     const baseSpec = await capture([

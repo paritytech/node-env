@@ -1,6 +1,6 @@
 import { Command } from '@cliffy/command'
 import { join } from '@std/path'
-import { PASEO_DIR, validateDir } from '../lib/config.ts'
+import { CHAINSPEC_DIR, PASEO_DIR, validateDir } from '../lib/config.ts'
 import { cargoBuild } from '../lib/cargo.ts'
 import { buildPaseoChainSpec, OMNI_NODE_BIN } from '../lib/chain_spec.ts'
 import { serve } from '../lib/process.ts'
@@ -28,10 +28,7 @@ export async function paseo(opts: PaseoOptions = {}): Promise<void> {
         if (mode === 'build') return
     }
 
-    const chainSpec = join(
-        Deno.env.get('HOME') ?? '',
-        'ah-paseo-spec.json',
-    )
+    const chainSpec = join(CHAINSPEC_DIR, 'ah-paseo-spec.json')
 
     await serve({
         name: 'paseo',

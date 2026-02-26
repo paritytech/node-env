@@ -29,7 +29,7 @@ function teeToConsoleAndFile(
     ).catch(() => {})
 }
 
-/** Spawn a process, tee stdout+stderr to ~/.revive/logs/<name>.log */
+/** Spawn a process, tee stdout+stderr to ~/.node-env/logs/<name>.log */
 export async function spawn(opts: SpawnOptions): Promise<RunResult> {
     await ensureDir(LOG_DIR)
     const logFile = join(LOG_DIR, `${opts.name}.log`)

@@ -1,6 +1,7 @@
 import { ensureDir } from '@std/fs'
 import { dirname, join } from '@std/path'
-import { POLKADOT_SDK_DIR, REVIVE_DIR } from './config.ts'
+import { Twox128 } from '@polkadot-api/substrate-bindings'
+import { CHAINSPEC_DIR, POLKADOT_SDK_DIR } from './config.ts'
 import { cargoBuild } from './cargo.ts'
 import { capture } from './process.ts'
 
@@ -183,20 +184,76 @@ function jsonStringify(obj: unknown): string {
     return result
 }
 
-/** Convenience: build + patch for westend */
+function u32ToLeHex(n: number): string {
+    const buf = new Uint8Array(4)
+    new DataView(buf.buffer).setUint32(0, n, true)
+    return '0x' + [...buf].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+function storageKey(pallet: string, item: string): string {
+    const enc = new TextEncoder()
+    const a = Twox128(enc.encode(pallet))
+    const b = Twox128(enc.encode(item))
+    return '0x' + [...a, ...b].map((b) => b.toString(16).padStart(2, '0'))
+        .join('')
+}
+
+/**
+ * Convert a patched chain spec to raw format and inject genesis storage keys.
+ *
+ * The scheduler's on_initialize reads LastRelayChainBlockNumber as `now`.
+ * Without it `now=0` and IncompleteSince gets reset every block, causing
+ * the scheduler to crawl from block 1 toward the current block (~295M).
+ * We inject both keys so the scheduler starts from a recent relay block.
+ *
+ * Key encoding: twox128(pallet_name) ++ twox128(storage_item_name)
+ * Value: (unix_time_ms - 2h) / 6000 as u32 LE — recomputed each generation.
+ */
+export async function buildRawChainSpec(
+    patchedSpecPath: string,
+    rawOutputPath: string,
+): Promise<void> {
+    const binary = await ensureOmniNode()
+    await ensureDir(dirname(rawOutputPath))
+
+    const stdout = await capture([
+        binary,
+        'build-spec',
+        '--raw',
+        '--chain',
+        patchedSpecPath,
+    ])
+
+    // deno-lint-ignore no-explicit-any
+    const spec: any = JSON.parse(stdout)
+
+    const relayBlock = Math.floor((Date.now() - 2 * 3600_000) / 6000)
+    const value = u32ToLeHex(relayBlock)
+
+    spec.genesis.raw.top[
+        storageKey('Scheduler', 'IncompleteSince')
+    ] = value
+    spec.genesis.raw.top[
+        storageKey('ParachainSystem', 'LastRelayChainBlockNumber')
+    ] = value
+
+    await Deno.writeTextFile(rawOutputPath, JSON.stringify(spec, null, 2))
+    console.log(`Raw chain spec written to ${rawOutputPath}`)
+}
+
+/** Convenience: build + patch + raw for westend */
 export async function buildWestendChainSpec(
     opts: { retester?: boolean },
 ): Promise<string> {
     const basePath = '/tmp/ah-westend-spec-base.json'
+    const patchedPath = '/tmp/ah-westend-spec-patched.json'
     const sdkDir = (await import('./config.ts')).POLKADOT_SDK_DIR
     const runtime = join(
         sdkDir,
         'target/debug/wbuild/asset-hub-westend-runtime/asset_hub_westend_runtime.wasm',
     )
 
-    const outputPath = opts.retester
-        ? join(REVIVE_DIR, 'ah-westend-spec.json')
-        : join(Deno.env.get('HOME') ?? '', 'ah-westend-spec.json')
+    const outputPath = join(CHAINSPEC_DIR, 'ah-westend-spec.json')
 
     await buildChainSpec({
         paraId: 1000,
@@ -206,25 +263,26 @@ export async function buildWestendChainSpec(
     })
     await patchChainSpec(
         basePath,
-        outputPath,
+        patchedPath,
         opts.retester
             ? { retester: true, devStakers: true }
             : { devBalance: true, devStakers: true },
     )
+    await buildRawChainSpec(patchedPath, outputPath)
 
     return outputPath
 }
 
-/** Convenience: build + patch for paseo */
+/** Convenience: build + patch + raw for paseo */
 export async function buildPaseoChainSpec(): Promise<string> {
-    const home = Deno.env.get('HOME') ?? ''
     const paseoDir = (await import('./config.ts')).PASEO_DIR
     const basePath = '/tmp/ah-paseo-spec-base.json'
+    const patchedPath = '/tmp/ah-paseo-spec-patched.json'
     const runtime = join(
         paseoDir,
         'target/debug/wbuild/asset-hub-paseo-runtime/asset_hub_paseo_runtime.wasm',
     )
-    const outputPath = join(home, 'ah-paseo-spec.json')
+    const outputPath = join(CHAINSPEC_DIR, 'ah-paseo-spec.json')
 
     await buildChainSpec({
         paraId: 1000,
@@ -232,9 +290,10 @@ export async function buildPaseoChainSpec(): Promise<string> {
         preset: 'development',
         outputPath: basePath,
     })
-    await patchChainSpec(basePath, outputPath, {
+    await patchChainSpec(basePath, patchedPath, {
         devBalance: true,
     })
+    await buildRawChainSpec(patchedPath, outputPath)
 
     return outputPath
 }

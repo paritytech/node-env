@@ -1,6 +1,10 @@
 import { Command } from '@cliffy/command'
 import { join } from '@std/path'
-import { POLKADOT_SDK_DIR, validatePolkadotSdkDir } from '../lib/config.ts'
+import {
+    CHAINSPEC_DIR,
+    POLKADOT_SDK_DIR,
+    validatePolkadotSdkDir,
+} from '../lib/config.ts'
 import { cargoBuild } from '../lib/cargo.ts'
 import { buildDevNodeSpec, patchChainSpec } from '../lib/chain_spec.ts'
 import { serve } from '../lib/process.ts'
@@ -36,12 +40,14 @@ export async function devNode(opts: DevNodeOptions = {}): Promise<void> {
         })
 
         if (opts.retester) {
-            const basePath = `${
-                Deno.env.get('HOME')
-            }/.revive/revive-dev-node-chainspec-base.json`
-            const specPath = `${
-                Deno.env.get('HOME')
-            }/.revive/revive-dev-node-chainspec.json`
+            const basePath = join(
+                CHAINSPEC_DIR,
+                'revive-dev-node-chainspec-base.json',
+            )
+            const specPath = join(
+                CHAINSPEC_DIR,
+                'revive-dev-node-chainspec.json',
+            )
             await buildDevNodeSpec(binary, basePath)
             await patchChainSpec(basePath, specPath, { retester: true })
         }
@@ -52,12 +58,14 @@ export async function devNode(opts: DevNodeOptions = {}): Promise<void> {
             } catch {
                 throw new Error(`Patch file not found: ${opts.patch}`)
             }
-            const basePath = `${
-                Deno.env.get('HOME')
-            }/.revive/revive-dev-node-chainspec-base.json`
-            const specPath = `${
-                Deno.env.get('HOME')
-            }/.revive/revive-dev-node-chainspec.json`
+            const basePath = join(
+                CHAINSPEC_DIR,
+                'revive-dev-node-chainspec-base.json',
+            )
+            const specPath = join(
+                CHAINSPEC_DIR,
+                'revive-dev-node-chainspec.json',
+            )
             await buildDevNodeSpec(binary, basePath)
             await patchChainSpec(basePath, specPath, {
                 customPatch: opts.patch,
@@ -87,7 +95,7 @@ export async function devNode(opts: DevNodeOptions = {}): Promise<void> {
     if (opts.retester || opts.patch) {
         args.push(
             '--chain',
-            `${Deno.env.get('HOME')}/.revive/revive-dev-node-chainspec.json`,
+            join(CHAINSPEC_DIR, 'revive-dev-node-chainspec.json'),
         )
     }
     if (opts.consensus) {

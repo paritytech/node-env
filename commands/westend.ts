@@ -1,9 +1,12 @@
 import { Command } from '@cliffy/command'
 import { join } from '@std/path'
-import { POLKADOT_SDK_DIR, validatePolkadotSdkDir } from '../lib/config.ts'
+import {
+    CHAINSPEC_DIR,
+    POLKADOT_SDK_DIR,
+    validatePolkadotSdkDir,
+} from '../lib/config.ts'
 import { cargoBuild } from '../lib/cargo.ts'
 import { buildWestendChainSpec, OMNI_NODE_BIN } from '../lib/chain_spec.ts'
-import { REVIVE_DIR } from '../lib/config.ts'
 import { serve } from '../lib/process.ts'
 
 export interface WestendOptions {
@@ -30,9 +33,7 @@ export async function westend(opts: WestendOptions = {}): Promise<void> {
         if (mode === 'build') return
     }
 
-    const chainSpec = opts.retester
-        ? join(REVIVE_DIR, 'ah-westend-spec.json')
-        : join(Deno.env.get('HOME') ?? '', 'ah-westend-spec.json')
+    const chainSpec = join(CHAINSPEC_DIR, 'ah-westend-spec.json')
 
     await serve({
         name: 'westend',

@@ -14,7 +14,7 @@ Deno CLI for managing Polkadot Revive dev environments (nodes, eth-rpc bridges, 
 - Use `deno fmt` and `deno lint` before committing
 - Format settings are in `deno.json` (no semicolons, single quotes, 4-space indent, 80-char line width)
 - Each command module exports two things: `fooCommand` (CLI) and `foo()` (programmatic)
-- All long-running processes tee output to `~/.revive/logs/<name>.log`
+- All long-running processes tee output to `~/.node-env/logs/<name>.log`
 - Config defaults live in `lib/config.ts` — all paths use env var overrides
 
 ## Running
@@ -30,5 +30,5 @@ deno run --allow-all mod.ts <cmd>  # direct
 - `POLKADOT_SDK_DIR` → `../polkadot-sdk`
 - `FOUNDRY_DIR` → `../foundry-polkadot`
 - `MITMPROXY_DIR` → `../mitmproxy`
-- Logs → `~/.revive/logs/`
-- Chain specs → `~/.revive/`
+- Logs → `~/.node-env/logs/`
+- Chain specs → `~/.node-env/chainspecs/`

@@ -77,7 +77,7 @@ Then from any Claude Code session you can type:
 
 ## Logging
 
-All process output is teed to `~/.revive/logs/<name>.log` (e.g. `dev-node.log`, `eth-rpc.log`).
+All process output is teed to `~/.node-env/logs/<name>.log` (e.g. `dev-node.log`, `eth-rpc.log`).
 
 ## Programmatic use
 

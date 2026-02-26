@@ -20,8 +20,9 @@ export const MITMPROXY_DIR = Deno.env.get('MITMPROXY_DIR') ??
     SIBLING('mitmproxy')
 
 const home = Deno.env.get('HOME') ?? ''
-export const REVIVE_DIR = join(home, '.revive')
-export const LOG_DIR = join(REVIVE_DIR, 'logs')
+export const NODE_ENV_DIR = join(home, '.node-env')
+export const LOG_DIR = join(NODE_ENV_DIR, 'logs')
+export const CHAINSPEC_DIR = join(NODE_ENV_DIR, 'chainspecs')
 
 // Default RUST_LOG per command
 export const RUST_LOG = {
